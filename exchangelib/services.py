@@ -642,7 +642,7 @@ class FindItem(EWSFolderService, PagingEWSMixIn):
     def call(self, **kwargs):
         return self._paged_call(**kwargs)
 
-    def _get_payload(self, additional_fields, restriction, shape, depth, offset=0):
+    def _get_payload(self, additional_fields, restriction, shape, depth, offset=0, calendar_view=None):
         finditem = create_element('m:%s' % self.SERVICE_NAME, Traversal=depth)
         itemshape = create_element('m:ItemShape')
         add_xml_child(itemshape, 't:BaseShape', shape)
@@ -650,8 +650,11 @@ class FindItem(EWSFolderService, PagingEWSMixIn):
             additional_property_elems = self.folder.additional_property_elems(additional_fields)
             add_xml_child(itemshape, 't:AdditionalProperties', additional_property_elems)
         finditem.append(itemshape)
-        indexedpageviewitem = create_element('m:IndexedPageItemView', Offset=str(offset), BasePoint='Beginning')
-        finditem.append(indexedpageviewitem)
+        if calendar_view is not None:
+            finditem.append(calendar_view.to_xml())
+        else:
+            indexedpageviewitem = create_element('m:IndexedPageItemView', Offset=str(offset), BasePoint='Beginning')
+            finditem.append(indexedpageviewitem)
         if restriction:
             finditem.append(restriction.xml)
         parentfolderids = create_element('m:ParentFolderIds')

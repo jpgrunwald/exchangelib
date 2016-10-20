@@ -16,6 +16,7 @@ from .services import TNS, IdOnly, SHALLOW, DEEP, FindFolder, GetFolder, FindIte
     MNS, ITEM_TRAVERSAL_CHOICES, FOLDER_TRAVERSAL_CHOICES, SHAPE_CHOICES
 from .util import create_element, add_xml_child, get_xml_attrs, get_xml_attr, set_xml_value
 from .version import EXCHANGE_2010
+from .calendarview import CalendarView
 
 log = getLogger(__name__)
 
@@ -1530,8 +1531,10 @@ class Folder(EWSElement):
 
         shape = kwargs.pop('shape', IdOnly)
         depth = kwargs.pop('depth', SHALLOW)
+        calendar_view = kwargs.pop('calendar_view', None)
         assert shape in SHAPE_CHOICES
         assert depth in ITEM_TRAVERSAL_CHOICES
+        assert calendar_view is None or isinstance(calendar_view, CalendarView)
 
         # Define the extra properties we want on the return objects
         additional_fields = kwargs.pop('additional_fields', tuple())
@@ -1563,7 +1566,8 @@ class Folder(EWSElement):
             additional_fields=additional_fields,
             restriction=restriction,
             shape=shape,
-            depth=depth
+            depth=depth,
+            calendar_view=calendar_view
         )
         if shape == IdOnly and additional_fields is None:
             return map(Item.id_from_xml, items)
